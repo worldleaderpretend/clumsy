@@ -163,6 +163,8 @@ robocopy $(SolutionDir)etc\ $(SolutionDir)$(Platform)\$(Configuration)\ config.t
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;WinDivert.lib;iup.lib;comctl32.lib;Winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>external/iup-3.16_Win64_dll11_lib;external/WinDivert-1.1.7-MSVC/amd64</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
       <Command>robocopy $(SolutionDir)external\WinDivert-1.1.7-MSVC\amd64\ $(SolutionDir)$(Platform)\$(Configuration)\ *.dll *.sys
