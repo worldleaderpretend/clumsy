@@ -20,8 +20,8 @@
 #define FIXED_EPSILON 0.01
 
 // workaround stupid vs2012 runtime check.
-// it would show even when seeing explicit "(short)(i);"
-#define I2S(x) ((short)((x) & 0xFFFF))
+// it would show even when seeing explicit "(int)(i);"
+#define I2S(x) ((int)((x) & 0xFFFF))
 
 
 #ifdef __MINGW32__
@@ -35,25 +35,25 @@
 // undef all mingw linked interlock* and use __atomic gcc builtins
 #ifdef __MINGW32__
 // and 16 seems to be broken
-#ifdef InterlockedAnd16
-#undef InterlockedAnd16
+#ifdef InterlockedAnd
+#undef InterlockedAnd
 #endif
-#define InterlockedAnd16(p, val) (__atomic_and_fetch((short*)(p), (val), __ATOMIC_SEQ_CST))
+#define InterlockedAnd(p, val) (__atomic_and_fetch((int*)(p), (val), __ATOMIC_SEQ_CST))
 
-#ifdef InterlockedExchange16
-#undef InterlockedExchange16
+#ifdef InterlockedExchange
+#undef InterlockedExchange
 #endif
-#define InterlockedExchange16(p, val) (__atomic_exchange_n((short*)(p), (val), __ATOMIC_SEQ_CST))
+#define InterlockedExchange(p, val) (__atomic_exchange_n((int*)(p), (val), __ATOMIC_SEQ_CST))
 
-#ifdef InterlockedIncrement16
-#undef InterlockedIncrement16
+#ifdef InterlockedIncrement
+#undef InterlockedIncrement
 #endif
-#define InterlockedIncrement16(p) (__atomic_add_fetch((short*)(p), 1, __ATOMIC_SEQ_CST))
+#define InterlockedIncrement(p) (__atomic_add_fetch((int*)(p), 1, __ATOMIC_SEQ_CST))
 
-#ifdef InterlockedDecrement16
-#undef InterlockedDecrement16
+#ifdef InterlockedDecrement
+#undef InterlockedDecrement
 #endif
-#define InterlockedDecrement16(p) (__atomic_sub_fetch((short*)(p), 1, __ATOMIC_SEQ_CST))
+#define InterlockedDecrement(p) (__atomic_sub_fetch((int*)(p), 1, __ATOMIC_SEQ_CST))
 
 #endif
 
@@ -96,7 +96,7 @@ PacketNode* popNode(PacketNode *node);
 PacketNode* insertBefore(PacketNode *node, PacketNode *target);
 PacketNode* insertAfter(PacketNode *node, PacketNode *target);
 PacketNode* appendNode(PacketNode *node);
-short isListEmpty();
+int isListEmpty();
 
 // shared ui handlers
 int uiSyncChance(Ihandle *ih);
@@ -112,16 +112,16 @@ typedef struct {
      */
     const char *displayName; // display name shown in ui
     const char *shortName; // single word name
-    short *enabledFlag; // volatile short flag to determine enabled or not
+    int *enabledFlag; // volatile int flag to determine enabled or not
     Ihandle* (*setupUIFunc)(); // return hbox as controls group
     void (*startUp)(); // called when starting up the module
     void (*closeDown)(PacketNode *head, PacketNode *tail); // called when starting up the module
-    short (*process)(PacketNode *head, PacketNode *tail);
+    int (*process)(PacketNode *head, PacketNode *tail);
     /*
      * Flags used during program excution. Need to be re initialized on each run
      */
-    short lastEnabled; // if it is enabled on last run
-    short processTriggered; // whether this module has been triggered in last step 
+    int lastEnabled; // if it is enabled on last run
+    int processTriggered; // whether this module has been triggered in last step 
     Ihandle *iconHandle; // store the icon to be updated
 } Module;
 
@@ -139,7 +139,7 @@ extern Module* modules[MODULE_CNT]; // all modules in a list
 #define SEND_STATUS_NONE 0
 #define SEND_STATUS_SEND 1
 #define SEND_STATUS_FAIL -1
-extern volatile short sendState;
+extern volatile int sendState;
 
 
 // Iup GUI
@@ -154,14 +154,14 @@ void divertStop();
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-short calcChance(short chance);
+int calcChance(int chance);
 
 #define BOUND_TEXT(b) ((b) == WINDIVERT_DIRECTION_INBOUND ? "IN" : "OUT")
 #define IS_INBOUND(b) ((b) == WINDIVERT_DIRECTION_INBOUND)
 #define IS_OUTBOUND(b) ((b) == WINDIVERT_DIRECTION_OUTBOUND)
 // inline helper for inbound outbound check
 static INLINE_FUNCTION
-BOOL checkDirection(UINT8 dir, short inbound, short outbound) {
+BOOL checkDirection(UINT8 dir, int inbound, int outbound) {
     return (inbound && IS_INBOUND(dir))
                 || (outbound && IS_OUTBOUND(dir));
 }

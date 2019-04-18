@@ -3,12 +3,12 @@
 #include "iup.h"
 #include "common.h"
 
-short calcChance(short chance) {
+int calcChance(int chance) {
     // notice that here we made a copy of chance, so even though it's volatile it is still ok
     return (chance == 10000) || ((rand() % 10000) < chance);
 }
 
-static short resolutionSet = 0;
+static int resolutionSet = 0;
 
 void startTimePeriod() {
     if (!resolutionSet) {
@@ -30,7 +30,7 @@ void endTimePeriod() {
 int uiSyncChance(Ihandle *ih) {
     char valueBuf[8];
     float value = IupGetFloat(ih, "VALUE"), newValue = value;
-    short *chancePtr = (short*)IupGetAttribute(ih, SYNCED_VALUE);
+    int *chancePtr = (int*)IupGetAttribute(ih, SYNCED_VALUE);
     if (newValue > 100.0f) {
        newValue = 100.0f;
     } else if (newValue < 0) {
@@ -43,18 +43,18 @@ int uiSyncChance(Ihandle *ih) {
         IupStoreAttribute(ih, "CARET", "10");
     }
     // and sync chance value
-    InterlockedExchange16(chancePtr, (short)(newValue * 100));
+    InterlockedExchange(chancePtr, (int)(newValue * 100));
     return IUP_DEFAULT;
 }
 
 int uiSyncToggle(Ihandle *ih, int state) {
-    short *togglePtr = (short*)IupGetAttribute(ih, SYNCED_VALUE);
-    InterlockedExchange16(togglePtr, I2S(state));
+    int *togglePtr = (int*)IupGetAttribute(ih, SYNCED_VALUE);
+    InterlockedExchange(togglePtr, I2S(state));
     return IUP_DEFAULT;
 }
 
 int uiSyncInteger(Ihandle *ih) {
-    short *integerPointer = (short*)IupGetAttribute(ih, SYNCED_VALUE);
+    int *integerPointer = (int*)IupGetAttribute(ih, SYNCED_VALUE);
     const int maxValue = IupGetInt(ih, INTEGER_MAX);
     const int minValue = IupGetInt(ih, INTEGER_MIN);
     // normalize input into [min, max]
@@ -73,18 +73,18 @@ int uiSyncInteger(Ihandle *ih) {
         IupStoreAttribute(ih, "CARET", "10");
     }
     // sync back
-    InterlockedExchange16(integerPointer, (short)newValue);
+    InterlockedExchange(integerPointer, (int)newValue);
     return IUP_DEFAULT;
 }
 
-// naive fixed number of (short) * 0.01
+// naive fixed number of (int) * 0.01
 int uiSyncFixed(Ihandle *ih) {
-    short *fixedPointer = (short*)IupGetAttribute(ih, SYNCED_VALUE);
+    int *fixedPointer = (int*)IupGetAttribute(ih, SYNCED_VALUE);
     const float maxFixedValue = IupGetFloat(ih, FIXED_MAX);
     const float minFixedValue = IupGetFloat(ih, FIXED_MIN);
     float value = IupGetFloat(ih, "VALUE");
     float newValue = value;
-    short fixValue;
+    int fixValue;
     char valueBuf[8];
     if (newValue > maxFixedValue) {
         newValue = maxFixedValue;
@@ -99,8 +99,8 @@ int uiSyncFixed(Ihandle *ih) {
         IupStoreAttribute(ih, "CARET", "10");
     }
     // sync back
-    fixValue = (short)(newValue / FIXED_EPSILON);
-    InterlockedExchange16(fixedPointer, fixValue);
+    fixValue = (int)(newValue / FIXED_EPSILON);
+    InterlockedExchange(fixedPointer, fixValue);
     return IUP_DEFAULT;
 }
 

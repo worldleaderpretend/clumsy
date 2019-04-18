@@ -9,9 +9,9 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *kpsInput;
 
-static volatile short capEnabled = 0,
+static volatile int capEnabled = 0,
     capInbound = 1, capOutbound = 1,
-    kps = (short)(32 / FIXED_EPSILON); // kb / second
+    kps = (int)(32 / FIXED_EPSILON); // kb / second
 
 static PacketNode capHeadNode = {0}, capTailNode = {0};
 static PacketNode *bufHead = &capHeadNode, *bufTail = &capTailNode;
@@ -53,8 +53,8 @@ static Ihandle* capSetupUI() {
 }
 
 // TODO these are exactly the same as throttle ones, try move them into packet.c
-static INLINE_FUNCTION short isBufEmpty() {
-    short ret = bufHead->next == bufTail;
+static INLINE_FUNCTION int isBufEmpty() {
+    int ret = bufHead->next == bufTail;
     if (ret) assert(bufSize == 0);
     return ret;
 }
@@ -88,8 +88,8 @@ static void capCloseDown(PacketNode *head, PacketNode *tail) {
     endTimePeriod();
 }
 
-static short capProcess(PacketNode *head, PacketNode *tail) {
-    short capped = FALSE;
+static int capProcess(PacketNode *head, PacketNode *tail) {
+    int capped = FALSE;
     PacketNode *pac, *pacTmp, *oldLast;
     DWORD curTick = timeGetTime();
     DWORD deltaTick = curTick - capLastTick;
@@ -161,7 +161,7 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
 Module capModule = {
     "Cap",
     NAME,
-    (short*)&capEnabled,
+    (int*)&capEnabled,
     capSetupUI,
     capStartUp,
     capCloseDown,

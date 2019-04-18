@@ -9,7 +9,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput, *countInput;
 
-static volatile short dupEnabled = 0,
+static volatile int dupEnabled = 0,
     dupInbound = 1, dupOutbound = 1,
     chance = 1000, // [0-10000]
     count = COPIES_COUNT; // how many copies to duplicate
@@ -65,13 +65,13 @@ static void dupCloseDown(PacketNode *head, PacketNode *tail) {
     LOG("dup disabled");
 }
 
-static short dupProcess(PacketNode *head, PacketNode *tail) {
-    short duped = FALSE;
+static int dupProcess(PacketNode *head, PacketNode *tail) {
+    int duped = FALSE;
     PacketNode *pac = head->next;
     while (pac != tail) {
         if (checkDirection(pac->addr.Direction, dupInbound, dupOutbound)
             && calcChance(chance)) {
-            short copies = count - 1;
+            int copies = count - 1;
             LOG("duplicating w/ chance %.1f%%, cloned additionally %d packets", chance/100.0, copies);
             while (copies--) {
                 PacketNode *copy = createNode(pac->packet, pac->packetLen, &(pac->addr));
@@ -87,7 +87,7 @@ static short dupProcess(PacketNode *head, PacketNode *tail) {
 Module dupModule = {
     "Duplicate",
     NAME,
-    (short*)&dupEnabled,
+    (int*)&dupEnabled,
     dupSetupUI,
     dupStartup,
     dupCloseDown,

@@ -6,7 +6,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput, *checksumCheckbox;
 
-static volatile short tamperEnabled = 0,
+static volatile int tamperEnabled = 0,
     tamperInbound = 1,
     tamperOutbound = 1,
     chance = 1000, // [0 - 10000]
@@ -83,8 +83,8 @@ static INLINE_FUNCTION void tamper_buf(char *buf, UINT len) {
     }
 }
 
-static short tamperProcess(PacketNode *head, PacketNode *tail) {
-    short tampered = FALSE;
+static int tamperProcess(PacketNode *head, PacketNode *tail) {
+    int tampered = FALSE;
     PacketNode *pac = head->next;
     while (pac != tail) {
         if (checkDirection(pac->addr.Direction, tamperInbound, tamperOutbound)
@@ -97,9 +97,9 @@ static short tamperProcess(PacketNode *head, PacketNode *tail) {
                 // try to tamper the central part of the packet,
                 // since common packets put their checksum at head or tail
                 if (dataLen <= 4) {
-                    // for short packet just tamper it all
+                    // for int packet just tamper it all
                     tamper_buf(data, dataLen);
-                    LOG("tampered w/ chance %.1f, dochecksum: %d, short packet changed all", chance/100.0, doChecksum);
+                    LOG("tampered w/ chance %.1f, dochecksum: %d, int packet changed all", chance/100.0, doChecksum);
                 } else {
                     // for longer ones process 1/4 of the lens start somewhere in the middle
                     UINT len = dataLen;
@@ -123,7 +123,7 @@ static short tamperProcess(PacketNode *head, PacketNode *tail) {
 Module tamperModule = {
     "Tamper",
     NAME,
-    (short*)&tamperEnabled,
+    (int*)&tamperEnabled,
     tamperSetupUI,
     tamperStartup,
     tamperCloseDown,

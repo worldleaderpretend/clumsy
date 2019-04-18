@@ -7,7 +7,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput;
 
-static volatile short dropEnabled = 0,
+static volatile int dropEnabled = 0,
     dropInbound = 1, dropOutbound = 1,
     chance = 1000; // [0-10000]
 
@@ -53,7 +53,7 @@ static void dropCloseDown(PacketNode *head, PacketNode *tail) {
     LOG("drop disabled");
 }
 
-static short dropProcess(PacketNode *head, PacketNode* tail) {
+static int dropProcess(PacketNode *head, PacketNode* tail) {
     int dropped = 0;
     while (head->next != tail) {
         PacketNode *pac = head->next;
@@ -76,7 +76,7 @@ static short dropProcess(PacketNode *head, PacketNode* tail) {
 Module dropModule = {
     "Drop",
     NAME,
-    (short*)&dropEnabled,
+    (int*)&dropEnabled,
     dropSetupUI,
     dropStartUp,
     dropCloseDown,

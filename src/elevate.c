@@ -3,6 +3,7 @@
 // from the example CppSelfElevate
 // http://code.msdn.microsoft.com/windowsdesktop/CppUACSelfElevation-981c0160
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include "common.h"
 
 // 
@@ -103,14 +104,9 @@ BOOL IsElevated( ) {
 BOOL tryElevate(HWND hWnd, BOOL silent) {
     // Check the current process's "run as administrator" status.
     BOOL fIsRunAsAdmin;
-    OSVERSIONINFO osver = {sizeof(osver)}; // MUST initialize with the size or GetVersionEx fails
-    if (!GetVersionEx(&osver)) {
-        if (!silent) MessageBox(hWnd, (LPCSTR)"Failed to get os version. clumsy only supports Windows Vista or above.",
-            (LPCSTR)"Aborting", MB_OK);
-        return TRUE;
-    } else if (osver.dwMajorVersion < 6) {
-        if (!silent) MessageBox(hWnd, (LPCSTR)"Unsupported Windows version. clumsy only supports Windows Vista or above.",
-            (LPCSTR)"Aborting", MB_OK);
+    if (!IsWindowsVistaOrGreater()) {
+        if (!silent) MessageBox(hWnd, (LPTSTR)"Unsupported Windows version. clumsy only supports Windows Vista or above.",
+            (LPTSTR)"Aborting", MB_OK);
         return TRUE;
     }
 
@@ -122,12 +118,12 @@ BOOL tryElevate(HWND hWnd, BOOL silent) {
     // when not silent then trying to reinvoke to elevate
     if (!silent) {
         wchar_t szPath[MAX_PATH];
-        if (GetModuleFileName(NULL, (LPSTR)szPath, ARRAYSIZE(szPath)))
+        if (GetModuleFileName(NULL, (LPTSTR)szPath, ARRAYSIZE(szPath)))
         {
             // Launch itself as administrator.
             SHELLEXECUTEINFO sei = { sizeof(sei) };
-            sei.lpVerb = (LPSTR)"runas";
-            sei.lpFile = (LPSTR)szPath;
+            sei.lpVerb = (LPTSTR)"runas";
+            sei.lpFile = (LPTSTR)szPath;
             sei.hwnd = hWnd;
             sei.nShow = SW_NORMAL;
 
@@ -140,14 +136,14 @@ BOOL tryElevate(HWND hWnd, BOOL silent) {
                 {
                     // The user refused the elevation.
                     // alert and exit
-                    MessageBox(hWnd, (LPCSTR)"clumsy needs to be elevated to work. Run as Administrator or click Yes in promoted UAC dialog",
-                        (LPCSTR)"Aborting", MB_OK);
+                    MessageBox(hWnd, (LPTSTR)"clumsy needs to be elevated to work. Run as Administrator or click Yes in promoted UAC dialog",
+                        (LPTSTR)"Aborting", MB_OK);
                 }
             }
             // runas executed.
         } else {
-            MessageBox(hWnd, (LPCSTR)"Failed to get clumsy path. Please place the executable in a normal directory.",
-                (LPCSTR)"Aborting", MB_OK);
+            MessageBox(hWnd, (LPTSTR)"Failed to get clumsy path. Please place the executable in a normal directory.",
+                (LPTSTR)"Aborting", MB_OK);
         }
     }
 

@@ -10,7 +10,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput, *frameInput, *dropThrottledCheckbox;
 
-static volatile short throttleEnabled = 0,
+static volatile int throttleEnabled = 0,
     throttleInbound = 1, throttleOutbound = 1,
     chance = 1000, // [0-10000]
     // time frame in ms, when a throttle start the packets within the time 
@@ -23,8 +23,8 @@ static PacketNode *bufHead = &throttleHeadNode, *bufTail = &throttleTailNode;
 static int bufSize = 0;
 static DWORD throttleStartTick = 0;
 
-static INLINE_FUNCTION short isBufEmpty() {
-    short ret = bufHead->next == bufTail;
+static INLINE_FUNCTION int isBufEmpty() {
+    int ret = bufHead->next == bufTail;
     if (ret) assert(bufSize == 0);
     return ret;
 }
@@ -113,8 +113,8 @@ static void throttleCloseDown(PacketNode *head, PacketNode *tail) {
     endTimePeriod();
 }
 
-static short throttleProcess(PacketNode *head, PacketNode *tail) {
-    short throttled = FALSE;
+static int throttleProcess(PacketNode *head, PacketNode *tail) {
+    int throttled = FALSE;
     UNREFERENCED_PARAMETER(head);
     if (!throttleStartTick) {
         if (!isListEmpty() && calcChance(chance)) {
@@ -158,7 +158,7 @@ THROTTLE_START:
 Module throttleModule = {
     "Throttle",
     NAME,
-    (short*)&throttleEnabled,
+    (int*)&throttleEnabled,
     throttleSetupUI,
     throttleStartUp,
     throttleCloseDown,

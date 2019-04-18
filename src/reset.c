@@ -8,7 +8,7 @@ static const unsigned int TCP_MIN_SIZE = sizeof(WINDIVERT_IPHDR) + sizeof(WINDIV
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput, *rstButton;
 
-static volatile short resetEnabled = 0,
+static volatile int resetEnabled = 0,
     resetInbound = 1, resetOutbound = 1,
     chance = 0, // [0-10000]
     setNextCount = 0;
@@ -21,7 +21,7 @@ static int resetSetRSTNextButtonCb(Ihandle *ih) {
         return IUP_DEFAULT;
     }
 
-    InterlockedIncrement16(&setNextCount);
+    InterlockedIncrement(&setNextCount);
 
     return IUP_DEFAULT;
 }
@@ -62,18 +62,18 @@ static Ihandle* resetSetupUI() {
 
 static void resetStartup() {
     LOG("reset enabled");
-    InterlockedExchange16(&setNextCount, 0);
+    InterlockedExchange(&setNextCount, 0);
 }
 
 static void resetCloseDown(PacketNode *head, PacketNode *tail) {
     UNREFERENCED_PARAMETER(head);
     UNREFERENCED_PARAMETER(tail);
     LOG("reset disabled");
-    InterlockedExchange16(&setNextCount, 0);
+    InterlockedExchange(&setNextCount, 0);
 }
 
-static short resetProcess(PacketNode *head, PacketNode *tail) {
-    short reset = FALSE;
+static int resetProcess(PacketNode *head, PacketNode *tail) {
+    int reset = FALSE;
     PacketNode *pac = head->next;
     while (pac != tail) {
         if (checkDirection(pac->addr.Direction, resetInbound, resetOutbound)
@@ -100,7 +100,7 @@ static short resetProcess(PacketNode *head, PacketNode *tail) {
 
                 reset = TRUE;
                 if (setNextCount > 0) {
-                    InterlockedDecrement16(&setNextCount);
+                    InterlockedDecrement(&setNextCount);
                 }
             }
         }
@@ -113,7 +113,7 @@ static short resetProcess(PacketNode *head, PacketNode *tail) {
 Module resetModule = {
     "Set TCP RST",
     NAME,
-    (short*)&resetEnabled,
+    (int*)&resetEnabled,
     resetSetupUI,
     resetStartup,
     resetCloseDown,

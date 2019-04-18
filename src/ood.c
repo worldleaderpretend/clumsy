@@ -8,7 +8,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput;
 
-static volatile short oodEnabled = 0,
+static volatile int oodEnabled = 0,
     oodInbound = 1, oodOutbound = 1,
     chance = 1000; // [0-10000]
 static PacketNode *oodPacket = NULL;
@@ -100,7 +100,7 @@ static void swapNode(PacketNode *a, PacketNode *b) {
     }
 }
 
-static short oodProcess(PacketNode *head, PacketNode *tail) {
+static int oodProcess(PacketNode *head, PacketNode *tail) {
     if (oodPacket != NULL) {
         if (!isListEmpty() || --giveUpCnt == 0) {
             LOG("Ooo sent direction %s, is giveup %s", BOUND_TEXT(oodPacket->addr.Direction), giveUpCnt ? "NO" : "YES");
@@ -142,7 +142,7 @@ static short oodProcess(PacketNode *head, PacketNode *tail) {
 Module oodModule = {
     "Out of order",
     NAME,
-    (short*)&oodEnabled,
+    (int*)&oodEnabled,
     oodSetupUI,
     oodStartUp,
     oodCloseDown,

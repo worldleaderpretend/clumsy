@@ -114,7 +114,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>X64;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X64;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>external/iup-3.16_Win64_dll11_lib/include;external/WinDivert-1.1.7-MSVC/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -155,7 +155,7 @@ robocopy $(SolutionDir)etc\ $(SolutionDir)$(Platform)\$(Configuration)\ config.t
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>X64;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X64;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>external/iup-3.16_Win64_dll11_lib/include;external/WinDivert-1.1.7-MSVC/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

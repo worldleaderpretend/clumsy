@@ -12,7 +12,7 @@
 // don't need a chance
 static Ihandle *inboundCheckbox, *outboundCheckbox, *timeInput;
 
-static volatile short lagEnabled = 0,
+static volatile int lagEnabled = 0,
     lagInbound = 1,
     lagOutbound = 1,
     lagTime = LAG_DEFAULT; // default for 50ms
@@ -21,8 +21,8 @@ static PacketNode lagHeadNode = {0}, lagTailNode = {0};
 static PacketNode *bufHead = &lagHeadNode, *bufTail = &lagTailNode;
 static int bufSize = 0;
 
-static INLINE_FUNCTION short isBufEmpty() {
-    short ret = bufHead->next == bufTail;
+static INLINE_FUNCTION int isBufEmpty() {
+    int ret = bufHead->next == bufTail;
     if (ret) assert(bufSize == 0);
     return ret;
 }
@@ -83,7 +83,7 @@ static void lagCloseDown(PacketNode *head, PacketNode *tail) {
     endTimePeriod();
 }
 
-static short lagProcess(PacketNode *head, PacketNode *tail) {
+static int lagProcess(PacketNode *head, PacketNode *tail) {
     DWORD currentTime = timeGetTime();
     PacketNode *pac = tail->prev;
     // pick up all packets and fill in the current time
@@ -125,7 +125,7 @@ static short lagProcess(PacketNode *head, PacketNode *tail) {
 Module lagModule = {
     "Lag",
     NAME,
-    (short*)&lagEnabled,
+    (int*)&lagEnabled,
     lagSetupUI,
     lagStartUp,
     lagCloseDown,

@@ -4,6 +4,7 @@
 #include <direct.h>
 #include <time.h>
 #include <Windows.h>
+#include <tchar.h>
 #include "iup.h"
 #include "common.h"
 
@@ -19,7 +20,7 @@ Module* modules[MODULE_CNT] = {
     //&capModule
 };
 
-volatile short sendState = SEND_STATUS_NONE;
+volatile int sendState = SEND_STATUS_NONE;
 
 // global iup handlers
 static Ihandle *dialog, *topFrame, *bottomFrame; 
@@ -42,7 +43,7 @@ static int uiFilterTextCb(Ihandle *ih);
 static void uiSetupModule(Module *module, Ihandle *parent);
 
 // serializing config files using a stupid custom format
-#define CONFIG_FILE "config.txt"
+#define CONFIG_FILE _T("config.txt")
 #define CONFIG_MAX_RECORDS 64
 #define CONFIG_BUF_SIZE 4096
 typedef struct {
@@ -56,16 +57,16 @@ BOOL parameterized = 0; // parameterized flag, means reading args from command l
 
 // loading up filters and fill in
 void loadConfig() {
-    char path[MSG_BUFSIZE];
-    char *p;
+    TCHAR path[MSG_BUFSIZE];
+    TCHAR *p;
     FILE *f;
     GetModuleFileName(NULL, path, MSG_BUFSIZE);
     LOG("Executable path: %s", path);
-    p = strrchr(path, '\\');
-    if (p == NULL) p = strrchr(path, '/'); // holy shit
-    strcpy(p+1, CONFIG_FILE);
+    p = _tcsrchr(path, '\\');
+    if (p == NULL) p = _tcsrchr(path, '/'); // holy shit
+    _tcscpy(p+1, CONFIG_FILE);
     LOG("Config path: %s", path);
-    f = fopen(path, "r");
+    f = _tfopen(path, _T("r"));
     if (f) {
         size_t len;
         char *p, *last;
@@ -293,8 +294,8 @@ static BOOL check32RunningOn64(HWND hWnd) {
     BOOL is64ret;
     // consider IsWow64Process return value
     if (IsWow64Process(GetCurrentProcess(), &is64ret) && is64ret) {
-        MessageBox(hWnd, (LPCSTR)"You're running 32bit clumsy on 64bit Windows, which wouldn't work. Please use the 64bit clumsy version.",
-            (LPCSTR)"Aborting", MB_OK);
+        MessageBox(hWnd, (LPTSTR)"You're running 32bit clumsy on 64bit Windows, which wouldn't work. Please use the 64bit clumsy version.",
+            (LPTSTR)"Aborting", MB_OK);
         return TRUE;
     }
     return FALSE;
@@ -302,7 +303,7 @@ static BOOL check32RunningOn64(HWND hWnd) {
 
 static BOOL checkIsRunning() {
     //It will be closed and destroyed when programm terminates (according to MSDN).
-    HANDLE hStartEvent = CreateEventW(NULL, FALSE, FALSE, L"Global\\CLUMSY_IS_RUNNING_EVENT_NAME");
+    HANDLE hStartEvent = CreateEventW(NULL, FALSE, FALSE, _T("Global\\CLUMSY_IS_RUNNING_EVENT_NAME"));
 
     if (hStartEvent == NULL)
         return TRUE;
@@ -328,14 +329,14 @@ static int uiOnDialogShow(Ihandle *ih, int state) {
     hInstance = GetModuleHandle(NULL);
 
     // set application icon
-    icon = LoadIcon(hInstance, "CLUMSY_ICON");
+    icon = LoadIcon(hInstance, _T("CLUMSY_ICON"));
     SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
     SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
 
     exit = checkIsRunning();
     if (exit) {
-        MessageBox(hWnd, (LPCSTR)"Theres' already an instance of clumsy running.",
-            (LPCSTR)"Aborting", MB_OK);
+        MessageBox(hWnd, (LPTSTR)"Theres' already an instance of clumsy running.",
+            (LPTSTR)"Aborting", MB_OK);
         return IUP_CLOSE;
     }
 
@@ -405,14 +406,14 @@ static int uiStopCb(Ihandle *ih) {
 
 static int uiToggleControls(Ihandle *ih, int state) {
     Ihandle *controls = (Ihandle*)IupGetAttribute(ih, CONTROLS_HANDLE);
-    short *target = (short*)IupGetAttribute(ih, SYNCED_VALUE);
+    int *target = (int*)IupGetAttribute(ih, SYNCED_VALUE);
     int controlsActive = IupGetInt(controls, "ACTIVE");
     if (controlsActive && !state) {
         IupSetAttribute(controls, "ACTIVE", "NO");
-        InterlockedExchange16(target, I2S(state));
+        InterlockedExchange(target, I2S(state));
     } else if (!controlsActive && state) {
         IupSetAttribute(controls, "ACTIVE", "YES");
-        InterlockedExchange16(target, I2S(state));
+        InterlockedExchange(target, I2S(state));
     }
 
     return IUP_DEFAULT;
@@ -424,7 +425,7 @@ static int uiTimerCb(Ihandle *ih) {
     for (ix = 0; ix < MODULE_CNT; ++ix) {
         if (modules[ix]->processTriggered) {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "doing_icon");
-            InterlockedAnd16(&(modules[ix]->processTriggered), 0);
+            InterlockedAnd(&(modules[ix]->processTriggered), 0);
         } else {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "none_icon");
         }
@@ -438,11 +439,11 @@ static int uiTimerCb(Ihandle *ih) {
         break;
     case SEND_STATUS_SEND:
         IupSetAttribute(stateIcon, "IMAGE", "doing_icon");
-        InterlockedAnd16(&sendState, SEND_STATUS_NONE);
+        InterlockedAnd(&sendState, SEND_STATUS_NONE);
         break;
     case SEND_STATUS_FAIL:
         IupSetAttribute(stateIcon, "IMAGE", "error_icon");
-        InterlockedAnd16(&sendState, SEND_STATUS_NONE);
+        InterlockedAnd(&sendState, SEND_STATUS_NONE);
         break;
     }
 

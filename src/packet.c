@@ -61,6 +61,6 @@ PacketNode* appendNode(PacketNode *node) {
     return insertBefore(node, tail);
 }
 
-short isListEmpty() {
+int isListEmpty() {
     return head->next == tail;
 }
